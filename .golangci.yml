@@ -1,0 +1,48 @@
+linters:
+  disable-all: true
+  enable:
+    - bodyclose
+    - errcheck
+    - dogsled
+    - errcheck
+    - exhaustive
+    - exportloopref
+    - funlen
+    - goconst
+    - gocritic
+    - gocyclo
+    - gofmt
+    - goimports
+    - goprintffuncname
+    - gosimple
+    - govet
+    - ineffassign
+    - lll
+    - maintidx
+    - misspell
+    - nakedret
+    - nakedret
+    - nestif
+    - nilerr
+    - noctx
+    - nolintlint
+    - revive
+    - rowserrcheck
+    - staticcheck
+    - unused
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - whitespace
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+        - noctx
+        - govet
+        - staticcheck
+        - bodyclose
+        - funlen

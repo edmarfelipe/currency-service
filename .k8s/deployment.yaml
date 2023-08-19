@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: currency-service-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: currency-service-api
+  template:
+    metadata:
+      labels:
+        app: currency-service-api
+    spec:
+      containers:
+        - name: currency-service-api
+          image: edmarfelipe/currency-service
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 256m
+              memory: 80Mi
+            limits:
+              cpu: 256m
+              memory: 128Mi
+          ports:
+            - containerPort: 3000
+          env:
+            - name: REDIS_ADDR
+              value: currency-service-redis-srv
+          envFrom:
+            - configMapRef:
+                name: currency-service-api-config
+          livenessProbe:
+            httpGet:
+              path: /api/ready
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /api/ready
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 5
+            timeoutSeconds: 1

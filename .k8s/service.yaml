@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: currency-service-api-srv
+  labels:
+    app: currency-service-api
+spec:
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 3000
+  selector:
+    app: currency-service-api

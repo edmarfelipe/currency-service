@@ -1,0 +1,143 @@
+package convert_test
+
+import (
+	"encoding/json"
+	"io"
+	"net/http"
+	"testing"
+	"time"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"github.come/edmarfelipe/currency-service/internal"
+	"github.come/edmarfelipe/currency-service/internal/extsrv"
+	"github.come/edmarfelipe/currency-service/internal/httpserver"
+	"github.come/edmarfelipe/currency-service/internal/mock"
+	"github.come/edmarfelipe/currency-service/usecase/convert"
+)
+
+type test struct {
+	name string
+	url  string
+}
+
+func TestConvertController(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	cache := mock.NewMockCache(ctrl)
+	service := mock.NewMockCurrencyService(ctrl)
+
+	cacheExpiration := int64(time.Minute * 60)
+	cache.EXPECT().Get(gomock.Any(), "convert:BRL", cacheExpiration).Return(nil, nil).AnyTimes()
+	cache.EXPECT().Set(gomock.Any(), "convert:BRL", gomock.Any(), cacheExpiration).AnyTimes()
+	cache.EXPECT().Get(gomock.Any(), "convert:USD", cacheExpiration).Return(nil, nil).AnyTimes()
+	cache.EXPECT().Set(gomock.Any(), "convert:USD", gomock.Any(), cacheExpiration).AnyTimes()
+
+	service.EXPECT().GetRate(gomock.Any(), "BRL").
+		Return([]extsrv.SymbolValue{
+			{"EUR", 0.18168},
+			{"INR", 16.230682},
+			{"USD", 0.197499},
+		}, nil).
+		AnyTimes()
+
+	service.EXPECT().GetRate(gomock.Any(), "USD").
+		Return([]extsrv.SymbolValue{
+			{"EUR", 0.919901},
+			{"INR", 82.180893},
+			{"BRL", 5.063305},
+		}, nil).
+		AnyTimes()
+
+	service.EXPECT().GetRate(gomock.Any(), "INR").
+		Return([]extsrv.SymbolValue{}, extsrv.ErrFailedToConnect).
+		AnyTimes()
+
+	server := httpserver.New(&internal.Container{
+		Config: &internal.Config{
+			Currencies:      []string{"BRL", "EUR", "INR", "USD"},
+			CacheExpiration: cacheExpiration,
+		},
+		CurrencyService: service,
+	}).TestServer()
+
+	t.Cleanup(func() {
+		ctrl.Finish()
+		server.Close()
+	})
+
+	t.Run("Should validate invalid parameters", func(t *testing.T) {
+		ts := []test{
+			{
+				"Should return 400 when value is invalid",
+				server.URL + "/api/convert/USD/UNDEFINED",
+			},
+			{
+				"Should return 400 when currency is invalid",
+				server.URL + "/api/convert/US/99",
+			},
+			{
+				"Should return 400 when currency is not supported",
+				server.URL + "/api/convert/CAD/99",
+			},
+		}
+
+		for _, tc := range ts {
+			t.Run(tc.name, func(t *testing.T) {
+				resp, err := http.Get(tc.url)
+				assert.NoError(t, err)
+				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+			})
+		}
+	})
+
+	t.Run("Should calculate correct when currency is BRL", func(t *testing.T) {
+		resp, err := http.Get(server.URL + "/api/convert/BRL/10")
+		result := parseResult(resp)
+
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, 3, len(result))
+		assert.Equal(t, "EUR", result[0].Currency)
+		assert.Equal(t, "1.8168", result[0].Value)
+		assert.Equal(t, "INR", result[1].Currency)
+		assert.Equal(t, "162.3068", result[1].Value)
+		assert.Equal(t, "USD", result[2].Currency)
+		assert.Equal(t, "1.9750", result[2].Value)
+	})
+
+	t.Run("Should calculate correct when currency is USD", func(t *testing.T) {
+		resp, err := http.Get(server.URL + "/api/convert/USD/10")
+		result := parseResult(resp)
+
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, 3, len(result))
+		assert.Equal(t, 3, len(result))
+		assert.Equal(t, "EUR", result[0].Currency)
+		assert.Equal(t, "9.1990", result[0].Value)
+		assert.Equal(t, "INR", result[1].Currency)
+		assert.Equal(t, "821.8089", result[1].Value)
+		assert.Equal(t, "BRL", result[2].Currency)
+		assert.Equal(t, "50.6330", result[2].Value)
+	})
+
+	t.Run("Should handle correctly when an error occur on the use case", func(t *testing.T) {
+		resp, err := http.Get(server.URL + "/api/convert/INR/10")
+
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+	})
+}
+
+func parseResult(resp *http.Response) []convert.CurrencyValue {
+	var result []convert.CurrencyValue
+	bytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return result
+	}
+	err = json.Unmarshal(bytes, &result)
+	if err != nil {
+		return result
+	}
+	return result
+}

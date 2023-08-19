@@ -1,0 +1,95 @@
+openapi: 3.0.3
+info:
+  title: Currency Service
+  version: 1.0.0
+
+servers:
+  - url: /api
+
+paths:
+  /convert/{currency}/{value}:
+    get:
+      summary: Convert a value from a currency to another
+      operationId: convert
+      parameters:
+        - name: currency
+          in: path
+          description: The currency to which all results are behaving relative to
+          required: true
+          schema:
+            type: string
+
+        - name: value
+          in: path
+          description: The value which will be converted
+          required: true
+          schema:
+            type: number
+            format: double
+
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    currency:
+                      type: string
+                      example: "BRL"
+                    value:
+                      type: number
+                      format: double
+                      example: 298.37
+
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '504':
+          description: Server Timeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /ready:
+    get:
+      summary: Check if the service is ready
+      operationId: ready
+      responses:
+        '200':
+          description: OK
+        '504':
+          description: Server Timeout
+
+  /metrics:
+    get:
+      summary: Get metrics
+      operationId: metrics
+      responses:
+        '200':
+          description: OK
+        '500':
+            description: Server Internal Error
+
+components:
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Error message"
+

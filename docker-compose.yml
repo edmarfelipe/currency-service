@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  cache:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  api:
+    container_name: api
+    build: .
+    restart: always
+    environment:
+      - ENV=prd
+      - SERVER_ADDR=:3000
+      - REDIS_ADDR=cache:6379
+      - CURRENCIES=BRL,EUR,USD,INR
+      - API_URL=https://api.currencyapi.com/v3/latest
+      - API_TOKEN=aszpkb7WFWtjBFxj9JHcorObU2vKTjaOiFCqmnAI
+    depends_on:
+      - cache
+    ports:
+      - "3000:3000"

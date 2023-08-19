@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: currency-service-api-config
+  labels:
+    app: currency-service-api
+data:
+  ENV: "prd"
+  SERVER_ADDR: ":3000"
+  REDIS_ADDR: ""
+  REDIS_USER: ""
+  REDIS_PASS: ""
+  CURRENCIES: "BRL,EUR,USD,INR"
+  API_URL: "https://api.currencyapi.com/v3/latest"
+  API_TOKEN: "aszpkb7WFWtjBFxj9JHcorObU2vKTjaOiFCqmnAI"
