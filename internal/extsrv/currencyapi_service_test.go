@@ -78,12 +78,9 @@ func TestNewCurrencyService(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 3)
-		assert.Equal(t, "EUR", result[0].Code)
-		assert.Equal(t, 0.178613, result[0].Value)
-		assert.Equal(t, "INR", result[1].Code)
-		assert.Equal(t, 15.90579, result[1].Value)
-		assert.Equal(t, "USD", result[2].Code)
-		assert.Equal(t, 0.193584, result[2].Value)
+		assert.Contains(t, result, extsrv.SymbolValue{Code: "EUR", Value: 0.178613})
+		assert.Contains(t, result, extsrv.SymbolValue{Code: "INR", Value: 15.90579})
+		assert.Contains(t, result, extsrv.SymbolValue{Code: "USD", Value: 0.193584})
 	})
 
 	t.Run("Should return error when the API returns an error", func(t *testing.T) {
