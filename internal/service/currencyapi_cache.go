@@ -1,4 +1,4 @@
-package extsrv
+package service
 
 import (
 	"context"
@@ -45,7 +45,6 @@ func (c *currencyCache) getFromService(ctx context.Context, currency string) ([]
 	if err != nil {
 		slog.ErrorContext(ctx, "error saving cache", "err", err)
 	}
-
 	return rate, nil
 }
 

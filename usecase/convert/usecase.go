@@ -3,9 +3,8 @@ package convert
 import (
 	"context"
 	"fmt"
+	"github.come/edmarfelipe/currency-service/internal/service"
 	"log/slog"
-
-	"github.come/edmarfelipe/currency-service/internal/extsrv"
 )
 
 type Input struct {
@@ -26,10 +25,10 @@ func NewCurrencyValue(currency string, value float64) CurrencyValue {
 }
 
 type UseCase struct {
-	service extsrv.CurrencyService
+	service service.CurrencyService
 }
 
-func NewUseCase(service extsrv.CurrencyService) *UseCase {
+func NewUseCase(service service.CurrencyService) *UseCase {
 	return &UseCase{
 		service: service,
 	}

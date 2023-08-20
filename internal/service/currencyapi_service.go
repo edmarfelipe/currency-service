@@ -1,4 +1,4 @@
-package extsrv
+package service
 
 import (
 	"context"

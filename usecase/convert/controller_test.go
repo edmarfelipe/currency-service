@@ -10,21 +10,22 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.come/edmarfelipe/currency-service/internal"
-	"github.come/edmarfelipe/currency-service/internal/extsrv"
+	"github.come/edmarfelipe/currency-service/internal/cache"
 	"github.come/edmarfelipe/currency-service/internal/httpserver"
-	"github.come/edmarfelipe/currency-service/internal/mock"
+	"github.come/edmarfelipe/currency-service/internal/service"
 	"github.come/edmarfelipe/currency-service/usecase/convert"
 )
 
 type test struct {
-	name string
-	url  string
+	name      string
+	url       string
+	expectErr error
 }
 
 func TestConvertController(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	cache := mock.NewMockCache(ctrl)
-	service := mock.NewMockCurrencyService(ctrl)
+	cache := cache.NewMockCache(ctrl)
+	currencyService := service.NewMockCurrencyService(ctrl)
 
 	cacheExpiration := int64(time.Minute * 60)
 	cache.EXPECT().Get(gomock.Any(), "convert:BRL", cacheExpiration).Return(nil, nil).AnyTimes()
@@ -32,24 +33,24 @@ func TestConvertController(t *testing.T) {
 	cache.EXPECT().Get(gomock.Any(), "convert:USD", cacheExpiration).Return(nil, nil).AnyTimes()
 	cache.EXPECT().Set(gomock.Any(), "convert:USD", gomock.Any(), cacheExpiration).AnyTimes()
 
-	service.EXPECT().GetRate(gomock.Any(), "BRL").
-		Return([]extsrv.SymbolValue{
+	currencyService.EXPECT().GetRate(gomock.Any(), "BRL").
+		Return([]service.SymbolValue{
 			{"EUR", 0.18168},
 			{"INR", 16.230682},
 			{"USD", 0.197499},
 		}, nil).
 		AnyTimes()
 
-	service.EXPECT().GetRate(gomock.Any(), "USD").
-		Return([]extsrv.SymbolValue{
+	currencyService.EXPECT().GetRate(gomock.Any(), "USD").
+		Return([]service.SymbolValue{
 			{"EUR", 0.919901},
 			{"INR", 82.180893},
 			{"BRL", 5.063305},
 		}, nil).
 		AnyTimes()
 
-	service.EXPECT().GetRate(gomock.Any(), "INR").
-		Return([]extsrv.SymbolValue{}, extsrv.ErrFailedToConnect).
+	currencyService.EXPECT().GetRate(gomock.Any(), "INR").
+		Return([]service.SymbolValue{}, service.ErrFailedToConnect).
 		AnyTimes()
 
 	server := httpserver.New(&internal.Container{
@@ -57,27 +58,25 @@ func TestConvertController(t *testing.T) {
 			Currencies:      []string{"BRL", "EUR", "INR", "USD"},
 			CacheExpiration: cacheExpiration,
 		},
-		CurrencyService: service,
-	}).TestServer()
-
-	t.Cleanup(func() {
-		ctrl.Finish()
-		server.Close()
-	})
+		CurrencyService: currencyService,
+	}).TestServer(t)
 
 	t.Run("Should validate invalid parameters", func(t *testing.T) {
 		ts := []test{
 			{
 				"Should return 400 when value is invalid",
 				server.URL + "/api/convert/USD/UNDEFINED",
+				convert.ErrInvalidInputValue,
 			},
 			{
 				"Should return 400 when currency is invalid",
 				server.URL + "/api/convert/US/99",
+				convert.ErrInvalidInputValue,
 			},
 			{
 				"Should return 400 when currency is not supported",
 				server.URL + "/api/convert/CAD/99",
+				convert.ErrInvalidInputValue,
 			},
 		}
 
@@ -123,9 +122,11 @@ func TestConvertController(t *testing.T) {
 
 	t.Run("Should handle correctly when an error occur on the use case", func(t *testing.T) {
 		resp, err := http.Get(server.URL + "/api/convert/INR/10")
+		bytes, _ := io.ReadAll(resp.Body)
 
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+		assert.Equal(t, "", string(bytes))
 	})
 }
 

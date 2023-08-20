@@ -5,14 +5,14 @@ import (
 
 	"github.com/rueian/rueidis"
 	"github.come/edmarfelipe/currency-service/internal/cache"
-	"github.come/edmarfelipe/currency-service/internal/extsrv"
+	"github.come/edmarfelipe/currency-service/internal/service"
 )
 
 // Container is a container for the application. that holds all the dependencies
 type Container struct {
 	redisClient     rueidis.Client
 	Config          *Config
-	CurrencyService extsrv.CurrencyService
+	CurrencyService service.CurrencyService
 }
 
 // NewContainer creates a new container with all the dependencies
@@ -25,8 +25,8 @@ func NewContainer(cfg *Config) (*Container, error) {
 	return &Container{
 		Config:      cfg,
 		redisClient: redisClient,
-		CurrencyService: extsrv.NewCurrencyCache(
-			extsrv.NewCurrencyService(cfg.API.URL, cfg.API.Token, cfg.Currencies),
+		CurrencyService: service.NewCurrencyCache(
+			service.NewCurrencyService(cfg.API.URL, cfg.API.Token, cfg.Currencies),
 			cache.New(redisClient),
 			cfg.CacheExpiration,
 		),

@@ -3,6 +3,7 @@
 
 [![build](https://github.com/edmarfelipe/currency-service/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/edmarfelipe/currency-service/actions/workflows/build.yml)
 [![codecov](https://codecov.io/gh/edmarfelipe/currency-service/graph/badge.svg?token=oZfYQLbFHH)](https://codecov.io/gh/edmarfelipe/currency-service)
+[![Go Report Card](https://goreportcard.com/badge/github.com/edmarfelipe/currency-service)](https://goreportcard.com/report/github.com/edmarfelipe/currency-service)
 
 ## Description
 
@@ -69,10 +70,10 @@ flowchart TD
 ### Installing
 
 To work with this project, you need to have installed:
-* [Go 1.20](https://golang.org/doc/install)
+* [Go 1.21](https://golang.org/doc/install)
+* [Make](https://www.gnu.org/software/make/)
 * [Docker](https://docs.docker.com/get-docker/)
 * [Docker Compose](https://docs.docker.com/compose/install/)
-* [Make](https://www.gnu.org/software/make/)
 
 ### Usage
 

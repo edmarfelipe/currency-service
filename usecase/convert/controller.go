@@ -7,13 +7,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.come/edmarfelipe/currency-service/internal"
-	"github.come/edmarfelipe/currency-service/internal/xhttp"
 )
 
 var (
-	errCurrencyNotSupport   = xhttp.NewAPIError("Currency not supported", http.StatusBadRequest)
-	errInvalidInputCurrency = xhttp.NewAPIError("Invalid 'Currency' parameter", http.StatusBadRequest)
-	errInvalidInputValue    = xhttp.NewAPIError("Invalid 'Value' parameter", http.StatusBadRequest)
+	ErrCurrencyNotSupport   = internal.APIError{Message: "Currency not supported", Status: http.StatusBadRequest}
+	ErrInvalidInputCurrency = internal.APIError{Message: "Invalid 'Currency' parameter", Status: http.StatusBadRequest}
+	ErrInvalidInputValue    = internal.APIError{Message: "Invalid 'Value' parameter", Status: http.StatusBadRequest}
 )
 
 type controller struct {
@@ -21,14 +20,14 @@ type controller struct {
 	Config *internal.Config
 }
 
-func NewController(ct *internal.Container) xhttp.Controller {
+func NewController(ct *internal.Container) *controller {
 	return &controller{
 		Config: ct.Config,
 		usc:    NewUseCase(ct.CurrencyService),
 	}
 }
 
-func (c *controller) IsCurrencyIsSupport(currency string) bool {
+func (c *controller) isCurrencyIsSupport(currency string) bool {
 	for _, item := range c.Config.Currencies {
 		if item == currency {
 			return true
@@ -40,16 +39,16 @@ func (c *controller) IsCurrencyIsSupport(currency string) bool {
 func (c *controller) Handler(w http.ResponseWriter, r *http.Request) error {
 	currency := chi.URLParam(r, "currency")
 	if len(currency) < 3 || len(currency) > 3 {
-		return errInvalidInputCurrency
+		return ErrInvalidInputCurrency
 	}
 
 	value, err := strconv.ParseFloat(chi.URLParam(r, "value"), 32)
 	if err != nil || value == 0 {
-		return errInvalidInputValue
+		return ErrInvalidInputValue
 	}
 
-	if !c.IsCurrencyIsSupport(currency) {
-		return errCurrencyNotSupport
+	if !c.isCurrencyIsSupport(currency) {
+		return ErrCurrencyNotSupport
 	}
 
 	in := Input{
@@ -62,10 +61,5 @@ func (c *controller) Handler(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	err = json.NewEncoder(w).Encode(out)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return json.NewEncoder(w).Encode(out)
 }
