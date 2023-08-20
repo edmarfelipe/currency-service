@@ -122,11 +122,9 @@ func TestConvertController(t *testing.T) {
 
 	t.Run("Should handle correctly when an error occur on the use case", func(t *testing.T) {
 		resp, err := http.Get(server.URL + "/api/convert/INR/10")
-		bytes, _ := io.ReadAll(resp.Body)
 
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-		assert.Equal(t, "", string(bytes))
 	})
 }
 

@@ -54,7 +54,7 @@ func (s *Server) Start() error {
 
 // TestServer returns a httptest.Server
 func (s *Server) TestServer(t *testing.T) *httptest.Server {
-	serv := httptest.NewServer(s.server.Handler)
+	serv := httptest.NewServer(s.createRouter(context.Background()))
 	t.Cleanup(func() {
 		t.Helper()
 		serv.Close()
