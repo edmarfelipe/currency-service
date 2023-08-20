@@ -8,7 +8,6 @@ import (
 )
 
 func Test_currencyCache_GetRate(t *testing.T) {
-
 	t.Run("Should return from cache when cache is not about to expire", func(t *testing.T) {})
 
 	t.Run("Should return from service when cache is expired", func(t *testing.T) {})

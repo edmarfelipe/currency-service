@@ -3,8 +3,9 @@ package convert
 import (
 	"context"
 	"fmt"
-	"github.come/edmarfelipe/currency-service/internal/service"
 	"log/slog"
+
+	"github.come/edmarfelipe/currency-service/internal/service"
 )
 
 type Input struct {

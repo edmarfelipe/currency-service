@@ -35,17 +35,17 @@ func TestConvertController(t *testing.T) {
 
 	currencyService.EXPECT().GetRate(gomock.Any(), "BRL").
 		Return([]service.SymbolValue{
-			{"EUR", 0.18168},
-			{"INR", 16.230682},
-			{"USD", 0.197499},
+			{Code: "EUR", Value: 0.18168},
+			{Code: "INR", Value: 16.230682},
+			{Code: "USD", Value: 0.197499},
 		}, nil).
 		AnyTimes()
 
 	currencyService.EXPECT().GetRate(gomock.Any(), "USD").
 		Return([]service.SymbolValue{
-			{"EUR", 0.919901},
-			{"INR", 82.180893},
-			{"BRL", 5.063305},
+			{Code: "EUR", Value: 0.919901},
+			{Code: "INR", Value: 82.180893},
+			{Code: "BRL", Value: 5.063305},
 		}, nil).
 		AnyTimes()
 
