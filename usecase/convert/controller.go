@@ -15,19 +15,19 @@ var (
 	ErrInvalidInputValue    = internal.APIError{Message: "Invalid 'Value' parameter", Status: http.StatusBadRequest}
 )
 
-type controller struct {
+type Controller struct {
 	usc    *UseCase
 	Config *internal.Config
 }
 
-func NewController(ct *internal.Container) *controller {
-	return &controller{
+func NewController(ct *internal.Container) *Controller {
+	return &Controller{
 		Config: ct.Config,
 		usc:    NewUseCase(ct.CurrencyService),
 	}
 }
 
-func (c *controller) isCurrencyIsSupport(currency string) bool {
+func (c *Controller) isCurrencyIsSupport(currency string) bool {
 	for _, item := range c.Config.Currencies {
 		if item == currency {
 			return true
@@ -36,7 +36,7 @@ func (c *controller) isCurrencyIsSupport(currency string) bool {
 	return false
 }
 
-func (c *controller) Handler(w http.ResponseWriter, r *http.Request) error {
+func (c *Controller) Handler(w http.ResponseWriter, r *http.Request) error {
 	currency := chi.URLParam(r, "currency")
 	if len(currency) < 3 || len(currency) > 3 {
 		return ErrInvalidInputCurrency

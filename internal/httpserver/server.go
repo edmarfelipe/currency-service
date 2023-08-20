@@ -15,14 +15,14 @@ import (
 	"github.come/edmarfelipe/currency-service/internal"
 )
 
-type server struct {
+type Server struct {
 	server http.Server
 	ct     *internal.Container
 }
 
-// New creates a new http server
-func New(ct *internal.Container) *server {
-	return &server{
+// New creates a new http Server
+func New(ct *internal.Container) *Server {
+	return &Server{
 		ct: ct,
 		server: http.Server{
 			ReadTimeout:       1 * time.Second,
@@ -33,8 +33,8 @@ func New(ct *internal.Container) *server {
 	}
 }
 
-// Start starts the http server
-func (s *server) Start() error {
+// Start starts the http Server
+func (s *Server) Start() error {
 	runCtx, runCancel := context.WithCancel(context.Background())
 	readyCtx, readyCancel := context.WithCancel(context.Background())
 
@@ -43,7 +43,7 @@ func (s *server) Start() error {
 
 	go s.waitForShutdown(runCancel, readyCancel)
 
-	slog.Info("Starting the http server on " + s.server.Addr)
+	slog.Info("Starting the http Server on " + s.server.Addr)
 	err := s.server.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
@@ -53,7 +53,7 @@ func (s *server) Start() error {
 }
 
 // TestServer returns a httptest.Server
-func (s *server) TestServer(t *testing.T) *httptest.Server {
+func (s *Server) TestServer(t *testing.T) *httptest.Server {
 	serv := httptest.NewServer(s.server.Handler)
 	t.Cleanup(func() {
 		t.Helper()
@@ -62,20 +62,20 @@ func (s *server) TestServer(t *testing.T) *httptest.Server {
 	return serv
 }
 
-// waitForShutdown waits for a SIGTERM, SIGINT or SIGQUIT signal and then shuts down the server
-func (s *server) waitForShutdown(runCancel context.CancelFunc, readyCancel context.CancelFunc) {
+// waitForShutdown waits for a SIGTERM, SIGINT or SIGQUIT signal and then shuts down the Server
+func (s *Server) waitForShutdown(runCancel context.CancelFunc, readyCancel context.CancelFunc) {
 	trap := make(chan os.Signal, 1)
 
 	signal.Notify(trap, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 
 	<-trap
-	slog.Info("Shutting down the server")
+	slog.Info("Shutting down the Server")
 	readyCancel()
 	<-time.After(2 * time.Second)
 
 	err := s.server.Shutdown(context.Background())
 	if err != nil {
-		slog.Error("Error shutting down the server", "err", err)
+		slog.Error("Error shutting down the Server", "err", err)
 	}
 
 	s.ct.Shutdown()

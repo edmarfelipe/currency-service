@@ -9,8 +9,8 @@ import (
 	"github.come/edmarfelipe/currency-service/usecase/convert"
 )
 
-// createRouter creates the router for the http server
-func (s *server) createRouter(readyCtx context.Context) *chi.Mux {
+// createRouter creates the router for the http Server
+func (s *Server) createRouter(readyCtx context.Context) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(requestIDMiddleware)
 	r.Use(loggerMiddleware)

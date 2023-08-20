@@ -24,14 +24,14 @@ type test struct {
 
 func TestConvertController(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	cache := cache.NewMockCache(ctrl)
+	cacheService := cache.NewMockCache(ctrl)
 	currencyService := service.NewMockCurrencyService(ctrl)
 
 	cacheExpiration := int64(time.Minute * 60)
-	cache.EXPECT().Get(gomock.Any(), "convert:BRL", cacheExpiration).Return(nil, nil).AnyTimes()
-	cache.EXPECT().Set(gomock.Any(), "convert:BRL", gomock.Any(), cacheExpiration).AnyTimes()
-	cache.EXPECT().Get(gomock.Any(), "convert:USD", cacheExpiration).Return(nil, nil).AnyTimes()
-	cache.EXPECT().Set(gomock.Any(), "convert:USD", gomock.Any(), cacheExpiration).AnyTimes()
+	cacheService.EXPECT().Get(gomock.Any(), "convert:BRL", cacheExpiration).Return(nil, nil).AnyTimes()
+	cacheService.EXPECT().Set(gomock.Any(), "convert:BRL", gomock.Any(), cacheExpiration).AnyTimes()
+	cacheService.EXPECT().Get(gomock.Any(), "convert:USD", cacheExpiration).Return(nil, nil).AnyTimes()
+	cacheService.EXPECT().Set(gomock.Any(), "convert:USD", gomock.Any(), cacheExpiration).AnyTimes()
 
 	currencyService.EXPECT().GetRate(gomock.Any(), "BRL").
 		Return([]service.SymbolValue{
