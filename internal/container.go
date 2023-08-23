@@ -10,8 +10,8 @@ import (
 
 // Container is a container for the application. that holds all the dependencies
 type Container struct {
-	redisClient     rueidis.Client
 	Config          *Config
+	redisClient     rueidis.Client
 	CurrencyService service.CurrencyService
 }
 
