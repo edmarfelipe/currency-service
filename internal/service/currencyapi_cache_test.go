@@ -40,17 +40,13 @@ func Test_currencyCache_GetRate(t *testing.T) {
 		currencyService := NewMockCurrencyService(ctrl)
 		cacheService := cache.NewMockCache(ctrl)
 
-		srv := &currencyCache{
-			cacheExpiration: (100 * time.Minute).Milliseconds(),
-			srv:             currencyService,
-			cache:           cacheService,
-		}
+		srv := NewCurrencyCache(currencyService, cacheService, (1 * time.Minute).Milliseconds())
 
 		cacheService.EXPECT().
 			Get(gomock.Any(), "convert:EUR", gomock.Any()).Return(nil, nil).AnyTimes()
 
 		cacheService.EXPECT().
-			Set(gomock.Any(), "convert:EUR", gomock.Any(), (100 * time.Minute).Milliseconds()).Return(nil).AnyTimes()
+			Set(gomock.Any(), "convert:EUR", gomock.Any(), (1 * time.Minute).Milliseconds()).Return(nil).AnyTimes()
 
 		currencyService.EXPECT().GetRate(gomock.Any(), "EUR").
 			Return([]SymbolValue{{Code: "EUR", Value: 0.1}}, nil).
@@ -60,6 +56,27 @@ func Test_currencyCache_GetRate(t *testing.T) {
 
 		assert.Nil(t, err)
 		assert.Equal(t, []SymbolValue{{Code: "EUR", Value: 0.1}}, result)
+	})
+
+	t.Run("Should update cache when cache is about to expire", func(t *testing.T) {
+		currencyService := NewMockCurrencyService(ctrl)
+		cacheService := cache.NewMockCache(ctrl)
+
+		srv := NewCurrencyCache(currencyService, cacheService, (1 * time.Minute).Milliseconds())
+
+		cacheService.EXPECT().
+			Get(gomock.Any(), "convert:EUR", gomock.Any()).Return(nil, nil).AnyTimes()
+
+		cacheService.EXPECT().
+			Set(gomock.Any(), "convert:EUR", gomock.Any(), (1 * time.Minute).Milliseconds()).Return(nil).AnyTimes()
+
+		currencyService.EXPECT().GetRate(gomock.Any(), "EUR").
+			Return([]SymbolValue{{Code: "EUR", Value: 0.1}}, nil).
+			AnyTimes()
+
+		_, err := srv.GetRate(context.Background(), "EUR")
+
+		assert.Nil(t, err)
 	})
 
 	t.Run("isAboutToExpire", func(t *testing.T) {

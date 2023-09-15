@@ -60,13 +60,7 @@ func (c *currencyCache) getFromCache(ctx context.Context, currency string) []Sym
 	}
 	// When the cache is about to expire, we start a goroutine to get the rate from the service
 	if c.isAboutToExpire(result.TTLRemaining) {
-		go func(ctx context.Context, currency string) {
-			slog.InfoContext(ctx, "Getting rate from service async")
-			_, err = c.getFromService(ctx, currency)
-			if err != nil {
-				slog.ErrorContext(ctx, "error getting rate from service", "err", err)
-			}
-		}(context.WithoutCancel(ctx), currency)
+		go c.updateCache(context.WithoutCancel(ctx), currency)
 	}
 
 	var value []SymbolValue
@@ -77,6 +71,14 @@ func (c *currencyCache) getFromCache(ctx context.Context, currency string) []Sym
 	}
 	slog.InfoContext(ctx, "Returning rate from cache", "ttl-remaining", result.TTLRemaining)
 	return value
+}
+
+func (c *currencyCache) updateCache(ctx context.Context, currency string) {
+	slog.InfoContext(ctx, "Getting rate from service async")
+	_, err := c.getFromService(ctx, currency)
+	if err != nil {
+		slog.ErrorContext(ctx, "error getting rate from service", "err", err)
+	}
 }
 
 func (c *currencyCache) GetRate(ctx context.Context, currency string) ([]SymbolValue, error) {
