@@ -12,7 +12,7 @@ import (
 
 func main() {
 	if err := run(); err != nil {
-		slog.Error("Failed to start: %v", err)
+		slog.Error("failed to start", "err", err)
 		os.Exit(1)
 	}
 }

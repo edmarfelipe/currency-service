@@ -69,7 +69,7 @@ func (srv *currencyService) GetRate(ctx context.Context, currency string) ([]Sym
 	defer func() {
 		err := resp.Body.Close()
 		if err != nil {
-			slog.ErrorContext(ctx, "Could not close body response", err)
+			slog.ErrorContext(ctx, "Could not close body response", "err", err)
 		}
 	}()
 
