@@ -6,7 +6,7 @@ import (
 	chimetrics "github.com/edmarfelipe/chi-prometheus"
 	"github.com/go-chi/chi/v5"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.come/edmarfelipe/currency-service/usecase/convert"
+	"github.come/edmarfelipe/currency-service/internal/usecase/convert"
 )
 
 // createRouter creates the router for the http Server

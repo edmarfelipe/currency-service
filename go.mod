@@ -1,6 +1,6 @@
 module github.come/edmarfelipe/currency-service
 
-go 1.21
+go 1.23
 
 require (
 	github.com/caarlos0/env/v7 v7.1.0

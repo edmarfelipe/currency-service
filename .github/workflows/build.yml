@@ -1,8 +1,8 @@
 name: Go
 
 env:
-  GO_VERSION: '1.21'
-  GO_LINT_VERSION: 'v1.54.1'
+  GO_VERSION: '1.23'
+  GO_LINT_VERSION: 'v1.60.3'
 
 on:
   push:

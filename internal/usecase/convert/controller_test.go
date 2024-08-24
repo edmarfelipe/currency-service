@@ -13,7 +13,7 @@ import (
 	"github.come/edmarfelipe/currency-service/internal/cache"
 	"github.come/edmarfelipe/currency-service/internal/httpserver"
 	"github.come/edmarfelipe/currency-service/internal/service"
-	"github.come/edmarfelipe/currency-service/usecase/convert"
+	"github.come/edmarfelipe/currency-service/internal/usecase/convert"
 )
 
 type test struct {
